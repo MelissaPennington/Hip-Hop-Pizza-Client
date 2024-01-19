@@ -3,37 +3,37 @@ import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import { createOrder, updateOrder } from '../utils/data/orderData';
+import { useAuth } from '../utils/context/authContext';
 
 const initialState = {
   name: '',
-  open: true,
   phone: '',
   email: '',
   type: '',
+  open: true,
+  user: '',
 };
 
-const OrderForm = ({ initialOrder, user }) => {
-  const router = useRouter();
+const OrderForm = ({ orderObj }) => {
   const [currentOrder, setCurrentOrder] = useState(initialState);
+  const router = useRouter();
+  const { user } = useAuth();
 
   useEffect(() => {
-    // console.warn(initialGame);
-    // console.warn(currentGame);
-    // TODO: Get the game types, then set the state
-    // getGameTypes().then(setGameTypes);
-
-    if (initialOrder) {
-      const formattedOrder = {
-        ...initialOrder,
-        type: initialOrder.type,
-      };
-      setCurrentOrder(formattedOrder);
+    if (orderObj.id) {
+      setCurrentOrder({
+        id: orderObj.id,
+        name: orderObj.name,
+        phone: orderObj.phone,
+        email: orderObj.email,
+        type: orderObj.type,
+        open: orderObj.open,
+        user: user.id,
+      });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialOrder]);
+  }, [orderObj, user]);
 
   const handleChange = (e) => {
-    // TODO: Complete the onChange function
     const { name, value } = e.target;
     setCurrentOrder((prevState) => ({
       ...prevState,
@@ -43,83 +43,52 @@ const OrderForm = ({ initialOrder, user }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const order = {
-      name: currentOrder.name,
-      open: currentOrder.open,
-      phone: currentOrder.phone,
-      email: currentOrder.email,
-      type: currentOrder.type,
-      user: user.uid,
-    };
-
-    // Send POST request to your API
-    if (initialOrder) {
-      updateOrder(currentOrder.id, order).then(() => router.push(`/orders/${currentOrder.id}`));
+    if (orderObj.id) {
+      const payload = {
+        id: currentOrder.id,
+        name: currentOrder.name,
+        phone: currentOrder.phone,
+        email: currentOrder.email,
+        type: currentOrder.type,
+        open: orderObj.open,
+        user: user.id,
+      };
+      updateOrder(payload, user.uid)
+        .then(() => router.push('/orders'));
     } else {
-      createOrder(order).then(() => router.push('/orders/orders'));
+      const payload = { ...currentOrder, user: user.id };
+      createOrder(payload)
+        .then(() => router.push('/orders'));
     }
   };
 
   return (
     <>
+      <h3>{orderObj.id ? 'Update Order' : 'Create Order'}</h3>
+      {/* {submissionError && <p className="text-danger">{submissionError}</p>} Render error message if exists */}
       <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3">
-          <Form.Label>Order Name</Form.Label>
-          <Form.Control
-            name="name"
-            required
-            value={currentOrder.name}
-            onChange={handleChange}
-          />
+          <Form.Label>Customer Name / Order Name</Form.Label>
+          <Form.Control name="name" required value={currentOrder.name} onChange={handleChange} />
         </Form.Group>
-
         <Form.Group className="mb-3">
           <Form.Label>Customer Phone</Form.Label>
-          <Form.Control
-            name="phone"
-            required
-            value={currentOrder.phone}
-            onChange={handleChange}
-          />
+          <Form.Control name="phone" required value={currentOrder.phone} onChange={handleChange} />
         </Form.Group>
-
         <Form.Group className="mb-3">
           <Form.Label>Customer Email</Form.Label>
-          <Form.Control
-            name="email"
-            required
-            value={currentOrder.email}
-            onChange={handleChange}
-          />
+          <Form.Control name="email" required value={currentOrder.email} onChange={handleChange} />
         </Form.Group>
-
-        {/* <Form.Group className="mb-3">
-          <Form.Label>Order Type</Form.Label>
-          <Form.Control
-            name="skillLevel"
-            required
-            value={Number(currentGame.skillLevel)}
-            onChange={handleChange}
-          />
-        </Form.Group> */}
-
         <Form.Group className="mb-3">
           <Form.Label>Order Type</Form.Label>
-          <Form.Select
-            name="type"
-            value={currentOrder.type}
-            required
-            onChange={handleChange}
-          >
+          <Form.Select name="type" required value={currentOrder.type} onChange={handleChange}>
             <option value="">Select Order Type</option>
-            <option value="phone">phone</option>
-            <option value="in-person">in-person</option>
+            <option value="In-Person">In-Person</option>
+            <option value="Phone">Phone</option>
           </Form.Select>
         </Form.Group>
-
         <Button variant="primary" type="submit">
-          Submit
+          {orderObj.id ? 'Update Order' : 'Create Order'}
         </Button>
       </Form>
     </>
@@ -127,22 +96,18 @@ const OrderForm = ({ initialOrder, user }) => {
 };
 
 OrderForm.propTypes = {
-  user: PropTypes.shape({
-    uid: PropTypes.string.isRequired,
-  }).isRequired,
-  initialOrder: PropTypes.shape({
-    name: PropTypes.string.isRequired,
-    open: PropTypes.bool.isRequired,
-    phone: PropTypes.string.isRequired,
-    email: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
-    id: PropTypes.number.isRequired,
-  }).isRequired,
-  // onUpdate: PropTypes.func.isRequired,
+  orderObj: PropTypes.shape({
+    id: PropTypes.number,
+    name: PropTypes.string,
+    email: PropTypes.string,
+    phone: PropTypes.string,
+    type: PropTypes.string,
+    open: PropTypes.bool,
+  }),
 };
 
-// GameForm.defaultProps = {
-//   initialGame: initialState,
-// };
+OrderForm.defaultProps = {
+  orderObj: initialState,
+};
 
 export default OrderForm;

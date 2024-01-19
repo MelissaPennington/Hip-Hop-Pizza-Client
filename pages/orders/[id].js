@@ -1,103 +1,121 @@
-import { useRouter } from 'next/router';
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react';
-import { Button, Modal } from 'react-bootstrap';
-import { getSingleOrder, deleteOrder } from '../../utils/data/orderData';
-import { deleteOrderItem, addOrderItem, getMenuItems } from '../../utils/data/orderItemData';
+import { useRouter } from 'next/router';
+import Card from 'react-bootstrap/Card';
+import Button from 'react-bootstrap/Button';
+import { Alert } from 'react-bootstrap';
+import ItemSelectionModal from '../../components/ItemModal';
+import { getSingleOrder, removeOrderItem, updateOrder } from '../../utils/data/orderData';
 
-const SingleOrderDetails = () => {
+function OrderDetails() {
   const router = useRouter();
   const { id } = router.query;
-  const [orderDetails, setOrderDetails] = useState();
+  const [order, setOrder] = useState({});
   const [showModal, setShowModal] = useState(false);
-  const [menuItems, setMenuItems] = useState([]);
+  const [errorMessage, setErrorMessage] = useState(null);
 
-  const handleOpenModal = () => {
-    getMenuItems().then(setMenuItems);
-    setShowModal(true);
-  };
-
-  useEffect(() => {
-    getSingleOrder(id).then(setOrderDetails);
-  }, [id]);
-
-  if (!orderDetails) {
-    return <div>Loading...</div>;
-  }
-
-  const deleteThisOrder = () => {
-    if (window.confirm('Are you sure you want to delete this order?')) {
-      deleteOrder(id).then(() => router.push('/orders/orders'));
+  const getOrderDetails = () => {
+    if (id) {
+      getSingleOrder(id)
+        .then((data) => setOrder(data))
+        .catch((error) => {
+          console.error('Error fetching order details:', error);
+          // Handle error as needed
+        });
     }
   };
 
-  const createOrderItem = (itemId) => {
-    addOrderItem(orderDetails.id, itemId).then(() => window.confirm('Item sucessfully added to order')).then(() => {
-      getSingleOrder(id).then(setOrderDetails);
+  const removeItem = (itemId) => {
+    // Check if the order is closed
+    if (!order.open) {
+      setErrorMessage('Cannot remove an item from a closed order.');
+      return;
+    }
+    removeOrderItem(order.id, itemId).then(() => {
+      setErrorMessage(null); // Reset error message
+      getOrderDetails();
     });
   };
 
-  const removeItem = (orderItemId, itemName) => {
-    if (window.confirm(`Remove ${itemName}?`)) {
-      deleteOrderItem(orderDetails.id, orderItemId).then(() => {
-        // Refresh the order details to reflect the deletion
-        getSingleOrder(id).then(setOrderDetails);
-      });
+  const calculateOrderTotal = () => {
+    if (order && order.items && order.items.length > 0) {
+      const total = order.items.reduce((acc, item) => acc + parseFloat(item.price), 0);
+      return total.toFixed(2);
     }
+    return '0.00';
   };
 
+  const handleAddItem = () => {
+    // Show the modal when the "Add Item" button is clicked
+    setShowModal(true);
+  };
+
+  const handleCloseOrder = () => {
+    updateOrder({ ...order, open: false }).then(() => {
+      // Navigate to the payment route first
+      router.push(`/orders/${order.id}/payment`);
+      // Fetch order details after the order is updated
+      getOrderDetails();
+    });
+  };
+
+  useEffect(() => {
+    if (id) {
+      getOrderDetails();
+    }
+  }, [id]);
+
   return (
-    <>
-      <h1 className="detailsTitle" style={{ textAlign: 'center', fontSize: 70, color: 'black' }}>Order #{orderDetails.id} - {orderDetails.open ? 'OPEN' : 'CLOSED'} </h1>
-      <div id="full-order">
-        <div id="customer-details">
-          <h2>Order Name: {orderDetails.name}</h2>
-          <h3>Customer Phone: {orderDetails.phone}</h3>
-          <h3>Customer Email: {orderDetails.email}</h3>
-          <Button onClick={() => router.push(`/orders/edit/${orderDetails.id}`)}>Edit Order</Button>
-          <Button onClick={deleteThisOrder}>Delete Order</Button>
-        </div>
-
-        <hr />
-
-        <div>
+    <article className="order-details">
+      {order && (
+        <>
           <div>
-            <h3 style={{ padding: 20 }}>Items in this Order:</h3>
-            <Button onClick={handleOpenModal}>Add Item</Button>
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
-              <Modal.Header closeButton>
-                <Modal.Title>Add an Item</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                {menuItems.map((menuItem) => (
-                  <section key={menuItem.id} className="menu-items">
-                    <div>Name: {menuItem.name}</div>
-                    <div>Price: ${menuItem.price}</div>
-                    <Button onClick={() => createOrderItem(menuItem.id)}>Add Item</Button>
-                  </section>
-                ))}
-              </Modal.Body>
-              <Modal.Footer>
-                <Button variant="secondary" onClick={() => setShowModal(false)}>
-                  Close
-                </Button>
-                {/* Add a button here to confirm adding the selected item */}
-              </Modal.Footer>
-            </Modal>
+            {/* Render error message as an alert */}
+            {errorMessage && (
+            <Alert variant="danger" className="text-center">
+              {errorMessage}
+            </Alert>
+            )}
+            <h2><b>Order #: {order.id}</b></h2>
+            <h2><b>Order Name: {order.name}</b></h2>
+            <h2><b>Total: ${calculateOrderTotal()}</b></h2>
           </div>
-          <div id="order-items-container">
-            {orderDetails.items.map((orderItem) => (
-              <section key={orderItem.id} className="order-items">
-                <div>Name: {orderItem.item.name}</div>
-                <div>Price: ${orderItem.item.price}</div>
-                <Button onClick={() => removeItem(orderItem.id, orderItem.item.name)}>Remove Item</Button>
-              </section>
+          <div>
+            {order.items && order.items.map((item) => (
+              <Card key={item.id} style={{ width: '18rem', marginBottom: '10px' }}>
+                <Card.Body>
+                  <Card.Title>{item.name}</Card.Title>
+                  <Card.Text>
+                    <span><b>Price:</b> ${parseFloat(item.price).toFixed(2)}</span>
+                  </Card.Text>
+                  <Button variant="danger" onClick={() => removeItem(item.id)}>
+                    Remove
+                  </Button>
+                </Card.Body>
+              </Card>
             ))}
           </div>
-        </div>
-
-      </div>
-    </>
+          <div>
+            <Button variant="primary" onClick={handleAddItem}>
+              Add Item
+            </Button>
+            <Button variant="success" onClick={handleCloseOrder}>
+              Go To Payment
+            </Button>
+          </div>
+          {/* Render the modal if showModal is true */}
+          {showModal && (
+            <ItemSelectionModal
+              show={showModal}
+              onHide={() => setShowModal(false)}
+              orderId={order.id}
+              onItemAdded={getOrderDetails} // Refresh order details after adding an item
+            />
+          )}
+        </>
+      )}
+    </article>
   );
-};
+}
 
-export default SingleOrderDetails;
+export default OrderDetails;

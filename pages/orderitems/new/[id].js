@@ -1,7 +1,7 @@
 // /* eslint-disable react-hooks/exhaustive-deps */
 // import React, { useEffect, useState } from 'react';
 // import { useRouter } from 'next/router';
-// import OrderItemForm from '../../../components/OrderItems/OrderItemForm';
+// import OrderItemForm from '../../../components/OrderItems/orderItemForm';
 // import { getSingleItem } from '../../../utils/data/itemsData';
 
 // const NewOrderItem = () => {

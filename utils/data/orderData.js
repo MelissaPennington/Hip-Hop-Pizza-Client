@@ -1,7 +1,14 @@
 import { clientCredentials } from '../client';
 
-const getOrders = () => new Promise((resolve, reject) => {
-  fetch(`${clientCredentials.databaseURL}/orders`)
+// API calls:
+const getOrders = (uid) => new Promise((resolve, reject) => {
+  fetch(`${clientCredentials.databaseURL}/orders`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `${uid}`,
+    },
+  })
     .then((response) => response.json())
     .then(resolve)
     .catch(reject);
@@ -23,52 +30,59 @@ const createOrder = (order) => new Promise((resolve, reject) => {
     body: JSON.stringify(order),
   })
     .then((response) => response.json())
-    .then(resolve)
-    .catch(reject);
+    .then((data) => {
+      resolve(data);
+    })
+    .catch((error) => {
+      console.error('Create Order Error:', error);
+      reject(error);
+    });
 });
 
-const updateOrder = (id, postBody) => new Promise((resolve, reject) => {
-  fetch(`${clientCredentials.databaseURL}/orders/${id}`, {
+const updateOrder = (payload, uid) => new Promise((resolve, reject) => {
+  fetch(`${clientCredentials.databaseURL}/orders/${payload.id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `${uid}`,
     },
-    body: JSON.stringify(postBody),
+    body: JSON.stringify(payload),
   })
-    .then((response) => {
-      if (response.ok && response.status !== 204) {
-        return response.json();
-      }
-      return null;
-    })
-    .then((data) => resolve(data))
+    .then(resolve)
     .catch(reject);
 });
 
 const deleteOrder = (id) => new Promise((resolve, reject) => {
   fetch(`${clientCredentials.databaseURL}/orders/${id}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   })
     .then((response) => {
-      if (response.ok && response.status !== 204) {
-        return response.json();
-      } if (response.ok) {
-        return null;
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
       }
-      throw new Error(`HTTP error! status: ${response.status}`);
+      resolve();
     })
-    .then((data) => resolve((data)))
     .catch(reject);
 });
 
-// eslint-disable-next-line import/prefer-default-export
+// Functions to add to and remove items from an order:
+const addOrderItem = (orderId, itemId) => fetch(`${clientCredentials.databaseURL}/orders/${orderId}/add_order_item/${itemId}`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+}).then((response) => response.json());
+
+const removeOrderItem = (orderId, orderItemId) => fetch(`${clientCredentials.databaseURL}/orders/${orderId}/remove_order_item/${orderItemId}`, {
+  method: 'DELETE',
+}).then(() => {});
+
 export {
   getOrders,
   getSingleOrder,
   createOrder,
   updateOrder,
   deleteOrder,
+  addOrderItem,
+  removeOrderItem,
 };
