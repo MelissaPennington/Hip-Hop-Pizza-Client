@@ -1,45 +1,46 @@
-// pages/revenue.js
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import RevenueList from '../../components/RevenueList';
+import React, { useState, useEffect } from 'react';
+import Head from 'next/head';
+import { getRevenues } from '../../utils/data/revenueData';
 
-export default function Revenue() {
-  const [totalRevenue, setTotalRevenue] = useState(0);
-  const [revenueData, setRevenueData] = useState([]); // State to store revenue data
+function Revenue() {
+  const [revenue, setRevenue] = useState([]);
+
+  const showRevenue = () => {
+    getRevenues().then((data) => setRevenue(data));
+  };
 
   useEffect(() => {
-    axios.get('/api/revenues/')
-      .then((response) => {
-        const { overallTotal, revenues } = response.data;
-        setTotalRevenue(overallTotal);
-        setRevenueData(revenues);
-      })
-      .catch((error) => {
-        console.error('Error fetching total revenue:', error);
-      });
+    showRevenue();
   }, []);
 
+  const calculateTotalRevenue = () => {
+    const total = revenue.reduce((acc, item) => acc + parseFloat(item.total), 0);
+    return total.toFixed(2);
+  };
+
+  const calculateTotalTip = () => {
+    const total = revenue.reduce((acc, item) => acc + parseFloat(item.tip), 0);
+    return total.toFixed(2);
+  };
+
   return (
-    <div>
-      <div className="text-center">
-        <h1>View Total Revenue</h1>
-        <h2>Total Revenue: ${totalRevenue.toFixed(2)}</h2>
-        <RevenueList revenues={revenueData} />
+    <>
+      <Head>
+        <title>Total Revenue</title>
+      </Head>
+      <div className="revenue-cont">
+        <br />
+        <h1 className="revenue-text">Revenue</h1>
+        <hr className="new" />
+        <br />
+        <h3 className="revenue-text">Total Revenue</h3>
+        <h6 className="revenue-text">{calculateTotalRevenue()}</h6>
+        <br />
+        <h3 className="revenue-text">Total Tips</h3>
+        <h6 className="revenue-text">{calculateTotalTip()}</h6>
       </div>
-    </div>
+    </>
   );
 }
 
-// // pages/revenue.js
-// import React from 'react';
-
-// export default function Revenue() {
-//   return (
-//     <div>
-//       <div className="text-center">
-//         <h1>View Total Revenue</h1>
-//         {/* Add logic to fetch and display total revenue */}
-//       </div>
-//     </div>
-//   );
-// }
+export default Revenue;

@@ -77,6 +77,41 @@ const removeOrderItem = (orderId, orderItemId) => fetch(`${clientCredentials.dat
   method: 'DELETE',
 }).then(() => {});
 
+const createRevenueData = (node) => new Promise((resolve, reject) => {
+  fetch(`${clientCredentials.databaseURL}/revenue-nodes`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(node),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      resolve(data);
+    })
+    .catch((error) => {
+      console.error('Error: Order not Created:', error);
+      reject(error);
+    });
+});
+
+const closeOrder = (id, status) => new Promise((resolve, reject) => {
+  fetch(`${clientCredentials.databaseURL}/orders/${id}/close`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(status),
+  })
+    .then((data) => {
+      resolve(data);
+    })
+    .catch((error) => {
+      console.error('Error: Item not added:', error);
+      reject(error);
+    });
+});
+
 export {
   getOrders,
   getSingleOrder,
@@ -85,4 +120,6 @@ export {
   deleteOrder,
   addOrderItem,
   removeOrderItem,
+  createRevenueData,
+  closeOrder,
 };
