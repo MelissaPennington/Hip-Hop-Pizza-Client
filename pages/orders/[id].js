@@ -99,6 +99,10 @@ function OrderDetails() {
             )}
             <h2><b>Order #: {order.id}</b></h2>
             <h2><b>Order Name: {order.name}</b></h2>
+            <h2><b>Status:{order.open ? 'Open ✔️' : 'Closed ❌'}</b></h2>
+            <h2><b>Phone: {order.phone}</b></h2>
+            <h2><b>Email: {order.email}</b></h2>
+            <h2><b>Order Type: {order.type}</b></h2>
             <h2><b>Total: ${calculateOrderTotal()}</b></h2>
           </div>
           <div>
