@@ -14,10 +14,13 @@ function Orders() {
   }, []);
 
   return (
-    <div className="order-cards-container">
-      <article className="orders">
+    <div style={{
+      display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start',
+    }}
+    >
+      <article className="orders" style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
         {orders.map((order) => (
-          <section key={`order--${order.id}`} className="order">
+          <section key={`order--${order.id}`} style={{ margin: '10px' }}>
             <OrderCard orderObj={order} onUpdate={getAllOrders} />
           </section>
         ))}

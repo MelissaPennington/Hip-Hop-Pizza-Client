@@ -21,7 +21,7 @@ export default function OrderCard({ orderObj, onUpdate }) {
           <Card.Header><b>Order #{orderObj.id}</b></Card.Header>
           <Card.Body>
             <Card.Title><b>Order Name: {orderObj.name}</b></Card.Title>
-            <Card.Text><b>Status:</b> {orderObj.open ? 'Open 🟢' : 'Closed 🔴'}</Card.Text>
+            <Card.Text><b>Status:</b> {orderObj.open ? 'Open ✔️' : 'Closed ❌'}</Card.Text>
             <Card.Text><b>Phone:</b> {orderObj.phone}</Card.Text>
             <Card.Text><b>Email:</b> {orderObj.email}</Card.Text>
             <Card.Text><b>Order Type:</b> {orderObj.type}</Card.Text>
