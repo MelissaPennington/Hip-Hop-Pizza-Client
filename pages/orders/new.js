@@ -5,10 +5,7 @@ const NewOrder = () => {
   const { user } = useAuth();
   return (
     <div>
-      <h2>Create New Order</h2>
-      <OrderForm
-        user={user}
-      />
+      <OrderForm user={user} />
     </div>
   );
 };

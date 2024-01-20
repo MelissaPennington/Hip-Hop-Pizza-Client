@@ -1,28 +1,21 @@
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import OrderForm from '../../../components/OrderForm';
-import { useAuth } from '../../../utils/context/authContext';
 import { getSingleOrder } from '../../../utils/data/orderData';
+import OrderForm from '../../../components/OrderForm';
 
-const UpdateOrder = () => {
+export default function EditOrder() {
+  const [editOrder, setEditOrder] = useState({});
   const router = useRouter();
-  const { user } = useAuth();
+
   const { id } = router.query;
-  const [updateOrder, setUpdateOrder] = useState();
 
   useEffect(() => {
-    getSingleOrder(id).then(setUpdateOrder);
+    getSingleOrder(id).then(setEditOrder);
   }, [id]);
 
   return (
-    <div>
-      <h2>Update Order</h2>
-      <OrderForm
-        user={user}
-        initialOrder={updateOrder}
-      />
-    </div>
+    <>
+      <OrderForm orderObj={editOrder} />
+    </>
   );
-};
-
-export default UpdateOrder;
+}
