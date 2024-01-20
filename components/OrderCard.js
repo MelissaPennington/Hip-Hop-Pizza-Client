@@ -26,16 +26,16 @@ export default function OrderCard({ orderObj, onUpdate }) {
             <Card.Text><b>Email:</b> {orderObj.email}</Card.Text>
             <Card.Text><b>Order Type:</b> {orderObj.type}</Card.Text>
             <Link href={`/orders/${orderObj.id}`} passHref>
-              <Button variant="primary" as="a">Details</Button>
+              <Button variant="success" as="a">Details</Button>
             </Link>
             <Button
-              variant="warning"
+              variant="primary"
               onClick={() => {
                 router.push(`/orders/edit/${orderObj.id}`);
               }}
             >Edit
             </Button>
-            <Button variant="danger" onClick={deleteThisOrder}>Delete</Button>
+            <Button variant="info" onClick={deleteThisOrder}>Delete</Button>
           </Card.Body>
         </Card>
       </div>
