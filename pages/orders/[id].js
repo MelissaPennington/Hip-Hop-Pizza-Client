@@ -107,7 +107,7 @@ function OrderDetails() {
           </div>
           <div>
             {order.items && order.items.map((item) => (
-              <Card key={item.id} style={{ width: '18rem', marginBottom: '10px' }}>
+              <Card item={item} key={item.id} style={{ width: '18rem', marginBottom: '10px' }}>
                 <Card.Body>
                   <Card.Title>{item.name}</Card.Title>
                   <Card.Text>
